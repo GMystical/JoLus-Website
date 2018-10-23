@@ -1,0 +1,775 @@
+<!doctype html> 
+
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>JoLu's Game</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.1.1/dist/phaser.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="JoLugame.css">
+
+</head>
+<body>
+    <div class="loading">Loading&#8230;</div>
+    <div>
+        <h1> Joel's Website </h1>
+    </div>
+
+    <div>
+        <h1> <font color= "blue">JoLu's game</font> </h1>
+    </div>
+
+    <div id="game-div" class = "game-container">
+    </div>
+
+
+
+<script type="text/javascript">
+
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height:600,
+    parent: 'game-div',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+var player;
+var player2;
+var player3;
+var player3facing = 'rightfacing';
+var lastpressed = new Date(); 
+var moving;
+// var Ppressed2 = (  P >= 2 )
+//                      {
+//                        player3.anims.play.SetBool ("attack2" , true);
+//                      }
+// // var stars;
+// var bombs;
+// var projectiles;
+var platforms;
+var cursors;
+var moon;
+// var score = 0;
+var gameOver = false;
+// var scoreText;
+var shootingstar;
+
+var phaserGame = new Phaser.Game(config);
+
+
+/*
+RUN THE preload FUNCTION ONCE BEFORE LOADING THE GAME
+*/
+
+function preload ()
+{
+    this.load.image('sky', './assets/sky.png');
+    this.load.image('space', './assets/space.png');
+    this.load.image('ground', './assets/platform.png');
+    this.load.image('ground2', './assets/platform2.png');
+    // this.load.image('star', './assets/star.png');
+    // this.load.image('bomb', './assets/bomb.png');
+    // this.load.image('projectile', './assets/projectile.png');
+    this.load.image('projectile2', './assets/projectile2.png');
+    this.load.image('moon', './assets/TheMoon.png');
+    this.load.spritesheet('stickman', './assets/stickman.png', { frameWidth: 88, frameHeight: 206 });
+    this.load.spritesheet('dude', './assets/dude.png', { frameWidth:32, frameHeight: 48 });
+    this.load.spritesheet('JoLu', './assets/JoLu.png', { frameWidth:117, frameHeight: 134 });
+} 
+   
+
+
+
+/*
+RUN THE create FUNCTION ONCE WHEN LOADING THE GAME 
+*/
+
+function create ()
+{
+    //  A simple background for our game
+    var skyimage = this.add.image(400, 300, 'space');
+    shootingstar = this.add.sprite(800, 200, 'projectile2');
+    moon = this.add.sprite(550,100 , 'moon');
+    /*
+    background Change cOdE
+    */
+    // const game = this;
+
+    // setTimeout(function(){
+    //     skyimage.destroy();
+    // }, 1 * 1000)
+
+
+    // setInterval(function() {
+    //     const randomColor = Phaser.Display.Color.RandomRGB();
+    //     game.cameras.main.setBackgroundColor(randomColor)
+    //     // game.add.image(400, 300,'sky2') \
+
+    // }, 1 * 1000);
+
+
+
+
+
+
+
+
+    //  The platforms group contains the ground and the 2 ledges we can jump on
+    platforms = this.physics.add.staticGroup();
+    //  Here we create the ground
+
+    //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+    platforms.create(427, 574, 'ground2').setScale(1.7).refreshBody();
+
+    moving = this.physics.add.group();
+
+
+     // Now let's create some ledges
+    moving.create(250, 300, 'ground');
+    moving.children.iterate(function(child) {
+        child.body.velocity.x = 147;
+        child.body.allowGravity = false;
+        child.body.immovable = true;
+        child.setBounce(1);
+        child.setCollideWorldBounds(true);
+
+    });
+
+
+
+
+
+    // The player and its settings
+    player = this.physics.add.sprite(300, 300, 'stickman');
+
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player.setBounce(0.2);
+    player.setCollideWorldBounds(false);
+
+    //  Our player animations, turning, walking left and walking right.
+    this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('stickman', { start: 1, end: 2 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'turn',
+        frames: [ { key: 'stickman', frame: 3 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('stickman', { start: 4, end: 5 }),
+        frameRate: 10,
+        repeat: -1
+
+    });
+
+
+  this.anims.create({
+        key: 'hurtleft',
+        frames: [{key:'stickman', frame: 0  }],
+        frameRate: 10,
+        repeat: -1
+    });
+
+  this.anims.create({
+        key: 'hurtright',
+        frames: [{key:'stickman', frame: 6 }],
+        frameRate: 10,
+        repeat: -1
+    });
+
+
+
+
+      // The player and its settings
+    player2 = this.physics.add.sprite(100, 450, 'dude');
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player2.setBounce(0.2);
+    player2.setCollideWorldBounds(false);
+
+    //  Our player animations, turning, walking left and walking right.
+    this.anims.create({
+        key: 'left2',
+        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'turn2',
+        frames: [ { key: 'dude', frame: 4 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'right2',
+        frames: this.anims.generateFrameNumbers('dude', { start: 7, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    player3 = this.physics.add.sprite(300,300, 'JoLu');
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player3.setBounce(0.2);
+    player3.setCollideWorldBounds(false);
+
+ 
+    this.anims.create({
+        key: 'left3',
+        frames: this.anims.generateFrameNumbers('JoLu', { start: 2, end: 4 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+      this.anims.create({
+        key: 'facingright3',
+        frames: [ { key: 'JoLu', frame: 6 } ],
+        frameRate: 20
+    });
+
+
+
+
+      this.anims.create({
+        key: 'facingleft3',
+        frames: [ { key: 'JoLu', frame: 5 } ],
+        frameRate: 20
+    });
+
+
+
+    this.anims.create({
+        key: 'right3',
+        frames: this.anims.generateFrameNumbers('JoLu', { start: 7, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+    
+    });
+
+    this.anims.create({
+        key: 'rightattack',
+        frames: [ { key: 'JoLu', frame: 10 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'leftattack',
+        frames: [ { key: 'JoLu', frame: 1 } ],
+        frameRate: 20
+        
+    });
+
+  this.anims.create({
+        key: 'rightattack2',
+        frames: [ { key: 'JoLu', frame: 11 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'leftattack2',
+        frames: [ { key: 'JoLu', frame: 0 } ],
+        frameRate: 20
+        
+    });
+
+
+
+
+        /*   
+    //  Set Controls
+        */
+
+
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+    wasd = this.input.keyboard.addKeys({
+        up: Phaser.Input.Keyboard.KeyCodes.W, 
+        down: Phaser.Input.Keyboard.KeyCodes.S, 
+        left: Phaser.Input.Keyboard.KeyCodes.A, 
+        right: Phaser.Input.Keyboard.KeyCodes.D, 
+    })
+
+    ijkl = this.input.keyboard.addKeys({
+        up: Phaser.Input.Keyboard.KeyCodes.I,
+        down: Phaser.Input.Keyboard.KeyCodes.K,
+        left: Phaser.Input.Keyboard.KeyCodes.J,
+        right: Phaser.Input.Keyboard.KeyCodes.L,
+        attack: Phaser.Input.Keyboard.KeyCodes.P,
+        // attack2: Phaser.Input.Keyboard.KeyCodes.O,
+    })
+
+    //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
+    // stars = this.physics.add.group({ 
+    //     key: 'star',
+    //     repeat: 11,
+    //     setXY: { x: 100, y: 0, stepX: 57  }
+    // });
+    // stars.children.iterate(function (child) {
+
+    //     //  Give each star a slightly different bounce
+    //     child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+    //     child.setCollideWorldBounds(true);
+
+    // });
+
+    // bombs = this.physics.add.group();
+
+    // projectiles = this.physics.add.group();
+
+
+    //  The score
+    // scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
+    //  Collide the player and the stars, and the bombs with the platforms
+    this.physics.add.collider(player, platforms);
+    this.physics.add.collider(player2, platforms);
+    this.physics.add.collider(player3, platforms);
+    // this.physics.add.collider(stars, platforms);
+    // this.physics.add.collider(bombs, platforms);
+
+    this.physics.add.collider(player, moving);
+    this.physics.add.collider(player2, moving);
+    this.physics.add.collider(player3, moving);
+    // this.physics.add.collider(stars, moving);
+    // this.physics.add.collider(bombs, moving);
+
+    // //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+    // this.physics.add.overlap(player, stars, collectStar, null, this);
+    // this.physics.add.overlap(player2, stars, collectStar, null, this);
+    // this.physics.add.overlap(player3, stars, collectStar, null, this);
+
+    // this.physics.add.collider(player, bombs, hitBomb, null, this);
+    // this.physics.add.collider(player2, bombs, hitBomb, null, this);
+    // this.physics.add.collider(player3, bombs, hitBomb, null, this);
+
+    // this.physics.add.collider(player, projectiles, hitProjectile, null, this);
+    // this.physics.add.collider(player2, projectiles, hitProjectile, null, this);
+    // this.physics.add.collider(player3, projectiles, hitProjectile, null, this);
+
+
+ 
+}
+
+function update () {
+    shootingstar.x -= 17;
+    shootingstar.y += 4;
+
+    if(Math.abs(shootingstar.x) > 8000 ){
+        shootingstar.x = 800;
+        shootingstar.y = 200;
+    }
+
+
+  
+
+    const leftBorder = 0;
+    const rightBorder = 800;
+    const topBorder = 0;
+    const bottomBorder = 600;
+
+    const playerIsOutOfBounds = player.y < topBorder || player.x < leftBorder  || player.y > bottomBorder || player.x > rightBorder; 
+
+    if (playerIsOutOfBounds) {
+        game0ver = true;
+        // this.physics.pause();
+    }
+
+    if (gameOver)
+    {
+        return;
+    } 
+
+    /*
+    Player1 controls 
+    */
+
+
+    if (cursors.left.isDown)
+    {
+        player.setVelocityX(-160);
+
+        player.anims.play('left', true);
+
+       
+    }
+    else if (cursors.right.isDown)
+    {
+        player.setVelocityX(160);
+
+        player.anims.play('right', true);
+
+   
+    }
+    else
+    {
+        player.setVelocityX(0);
+
+        player.anims.play('turn');
+
+   
+    }
+
+    if (cursors.up.isDown && player.body.touching.down)
+    {
+        player.setVelocityY(-427);
+    }
+
+
+    /*
+    Player2 controls
+    */
+ 
+    if (wasd.left.isDown)
+    {
+        player2.setVelocityX(-160);
+
+        player2.anims.play('left2', true);
+
+       
+    }
+    else if (wasd.right.isDown)
+    {
+        player2.setVelocityX(160);
+
+        player2.anims.play('right2', true);
+
+   
+    }
+    else
+    {
+        player2.setVelocityX(0);
+
+        player2.anims.play('turn2');
+
+   
+    }
+
+    
+    if (wasd.up.isDown && player2.body.touching.down)
+    {
+        player2.setVelocityY(-427);
+    }
+
+
+
+    /*
+    Player3 controls
+    */
+
+
+
+    if (ijkl.up.isDown && player3.body.touching.down)
+    {
+        player3.setVelocityY(-427);
+    }
+      if (ijkl.left.isDown)
+    {
+        player3.setVelocityX(-160);
+
+        player3.anims.play('left3', true);
+        player3facing = 'leftfacing'
+
+       
+    }
+    else if (ijkl.right.isDown)
+    {
+        player3.setVelocityX(160);
+
+        player3.anims.play('right3', true);
+        player3facing = 'rightfacing'
+
+   
+    }
+    else
+    {
+        player3.setVelocityX(0);
+
+        if (player3facing == 'rightfacing'){
+            player3.anims.play('facingright3')
+        } 
+        else if (player3facing == 'leftfacing'){
+            player3.anims.play('facingleft3')
+        }
+    }
+
+    if (ijkl.up.isDown && player3.body.touching.down)
+    {
+        player3.setVelocityY(-427);
+    }
+
+
+    if (ijkl.attack.isDown) {
+        var now = new Date();
+        
+        if (player3facing == 'rightfacing'){
+            var timeDifference = now.getTime() - lastpressed.getTime();
+            if (timeDifference<500 && timeDifference>100){
+                console.log("hello")
+                player3.anims.play('rightattack2', true);
+            } else {
+                player3.anims.play('rightattack', true);
+            }
+        } else if (player3facing == 'leftfacing'){
+            player3.anims.play('leftattack', true);
+        }
+        const playersAreClose = Math.abs(player.x - player3.x) < 100  
+        
+        if (playersAreClose){
+            if (player3facing == 'rightfacing') {
+                player.anims.play('hurtleft',true);
+            } else if (player3facing == 'leftfacing'){
+                player.anims.play('hurtright',true);
+            }
+        }
+
+        lastpressed = now;
+    }
+
+
+
+    if (ijkl.attack.isDown && ijkl.left.isDown && player3.body.touching.down)
+    {
+        player3.anims.play('leftattack', true);
+    }
+
+
+
+
+
+
+    //   if (ijkl.attack.isDown)
+    // {
+    //     if (player3facing == 'rightfacing'){
+
+    //         player3.anims.play('rightattack2', true);
+    //     } else if (player3facing == 'leftfacing'){
+    //         player3.anims.play('leftattack2', true);
+    //     }
+    // }
+
+
+
+
+}
+
+// // barrier between codes
+
+// // part1 of code
+
+
+
+//      int.P = 0;
+//      //Time when last button was clicked
+//      float.P = 0;
+//      //Delay between clicks for which clicks will be considered as combo
+//      float.attack.Delay = 1;
+//      void Update()
+//      {
+//          if(Time.time - float.P > float.attack.Delay)
+//         {
+//           int.P  = 0;
+//         }
+//      }
+//      //Call on button click
+//      void OnClick()
+//      {
+//             //Record time of last button click
+//            float.P = Time.time;
+//             int.P++;
+//             if( int.P == 1)
+//            {
+//               player3.anims.play.SetBool("rightattack" , true);
+//            }
+//             //limit/clamp no of clicks between 0 and 3 because you have combo for 3 clicks
+//             int.P =  Mathf.Clamp( int.P  , 0 , 3);
+//      }
+     
+
+
+
+// // part2 of code
+
+
+
+//      //Attach this script to Attack1 state in animator
+       
+
+     
+//           // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
+//          //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//          //
+//          //}
+     
+//          // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
+//          //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//          //
+//          //}
+     
+//          // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
+
+                  
+//          override (player3.anims.play) 
+//          {
+
+//             player3.anims.play.SetBool ("rightattack" , false);
+//                 // Obviously "noOfClicks" is not directly accessible here so you have to make it public and get it reference somehow to use it here 
+//              if(  int.P >= 2 )
+//                      {
+//                              animator.SetBool ("rightattack2" , true);
+//                      }
+//          }
+//          // OnStateMove is called right after Animator.OnAnimatorMove(). Code that processes and affects root motion should be implemented here
+//          //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//          //
+//          //}
+     
+//          // OnStateIK is called right after Animator.OnAnimatorIK(). Code that sets up animation IK (inverse kinematics) should be implemented here.
+//          //override public void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//          //
+//          //}
+     
+
+// // part3 of code
+
+
+//  //Attach this script to Attack2 state in animator
+//    Player3rightattack2 : StateMachineBehaviour 
+  
+//        // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
+//       //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//       //
+//       //}
+  
+//       // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
+//       //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+//       //
+//       //}
+  
+//       // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
+//         update(player3.anims.play) 
+//       {
+//          player3.anims.play.SetBool ("rightattack2" , false);
+//           if(  int.P >= 3 ){
+
+//           }
+                  
+                          
+                  
+      // <!-- } -->
+      // OnStateMove is called right after Animator.OnAnimatorMove(). Code that processes and affects root motion should be implemented here
+      //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+      //
+      //}
+  
+      // OnStateIK is called right after Animator.OnAnimatorIK(). Code that sets up animation IK (inverse kinematics) should be implemented here.
+      //override public void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
+      //
+      //}
+  
+  
+  
+ 
+
+
+
+
+
+// barrier between codes
+
+
+
+// function collectStar (player, star)
+// {
+//     star.disableBody(true, true);
+
+//     //  Add and update the score
+//     score += 10;
+//     scoreText.setText('Score: ' + score);
+
+//     if (stars.countActive(true) === 0)
+//     {
+//         //  A new batch of stars to collect
+//         stars.children.iterate(function (child) {
+
+//             child.enableBody(true, child.x, 0, true, true);
+
+//         });
+
+//         // var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+//         // var bomb = bombs.create(x, 16, 'bomb');
+//         // bomb.setBounce(1);
+//         // bomb.setCollideWorldBounds(true);
+//         // bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+//         // bomb.allowGravity = false;
+
+//         var projectile = projectiles.create(0, 400, 'projectile');
+//         projectile.setBounce(1);
+//         projectile.setCollideWorldBounds(false);
+//         projectile.setVelocity(100,0);
+//         projectile.body.allowGravity = false;
+
+//     }
+// }
+
+// function hitBomb (player, bomb)
+// {
+//     this.physics.pause();
+
+//     player.setTint(0xff0000);
+
+//     player.anims.play('turn');
+
+//     gameOver = true;
+// }
+
+
+//function touchingWorldBoundaries (player,setCollideWorldBounds)(true);
+// {
+//     this.physics.pause();
+
+//     player.setTint(0xff0000);
+
+//     player.anims.play('turn');
+
+//     gameOver = true;
+// }
+  
+
+
+// function hitProjectile (player, projectile)
+// {
+//     this.physics.pause();
+
+//     player.setTint(0xff0000);
+
+//     player.anims.play('turn');
+
+//     gameOver = true;
+// }
+
+
+</script>
+
+</body>
+</html>
