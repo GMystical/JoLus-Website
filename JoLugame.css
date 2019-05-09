@@ -1,5 +1,9 @@
 body {
     margin: 0; 
+
+
+ 
+
 }
 
 
@@ -7,4 +11,10 @@ body {
 .game-container{
 	text-align:center;
 	background-color:grey;
+}
+
+
+
+.audio-element {
+display: none;
 }

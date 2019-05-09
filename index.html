@@ -22,6 +22,17 @@
     <div id="game-div" class = "game-container">
     </div>
 
+    <audio id= "gameaudio" loop class="audio-element">
+      <source src="/assets/JoLus music - Flight theme.wav" type="audio/wav">
+    </audio>
+
+
+     <audio id= "joluaudio" loop class="audio-element">
+      <source src="/assets/JoLusmusic-Fight theme remix.wav" type="audio/wav">
+    </audio>
+
+
+
 
 
 <script type="text/javascript">
@@ -47,10 +58,12 @@ var config = {
 
 var player;
 var player2;
-var player3;
+var player3; 
 var player3facing = 'rightfacing';
-var lastpressed = new Date(); 
+var lastpressed = new Date();
+var player4; 
 var moving;
+var music;
 // var Ppressed2 = (  P >= 2 )
 //                      {
 //                        player3.anims.play.SetBool ("attack2" , true);
@@ -61,10 +74,37 @@ var moving;
 var platforms;
 var cursors;
 var moon;
-// var score = 0;
+var moonImage;
+var moonPositionIndex = 0;
+var moonPositions = [  { x: 550, y: 100, angle:7 },
+  { x: 550, y: 100,  angle:7 },
+  { x: 550, y: 100,  angle:7
+
+
+
+
+
+
+   },
+  { x: 550, y: 100,  angle:7 },
+  { x: 550, y: 100,  angle:7 },
+  { x: 550, y: 100,  angle:7 },
+
+
+
+
+
+
+
+];
 var gameOver = false;
 // var scoreText;
 var shootingstar;
+var skyimage;
+
+    audio: {
+        disableWebAudio: true
+    }
 
 var phaserGame = new Phaser.Game(config);
 
@@ -75,18 +115,22 @@ RUN THE preload FUNCTION ONCE BEFORE LOADING THE GAME
 
 function preload ()
 {
+
     this.load.image('sky', './assets/sky.png');
     this.load.image('space', './assets/space.png');
     this.load.image('ground', './assets/platform.png');
     this.load.image('ground2', './assets/platform2.png');
+    this.load.audio('flight', './music/JoLus music - Flight theme.mmpz');
     // this.load.image('star', './assets/star.png');
     // this.load.image('bomb', './assets/bomb.png');
     // this.load.image('projectile', './assets/projectile.png');
     this.load.image('projectile2', './assets/projectile2.png');
     this.load.image('moon', './assets/TheMoon.png');
-    this.load.spritesheet('stickman', './assets/stickman.png', { frameWidth: 88, frameHeight: 206 });
+    this.load.spritesheet('stickman', './assets/StickManSpriteSheet.png', { frameWidth: 33, frameHeight: 30 });
     this.load.spritesheet('dude', './assets/dude.png', { frameWidth:32, frameHeight: 48 });
-    this.load.spritesheet('JoLu', './assets/JoLu.png', { frameWidth:117, frameHeight: 134 });
+    this.load.spritesheet('JoLu', './assets/JoLuSpriteSheet.png', { frameWidth:45, frameHeight: 46 });
+    this.load.spritesheet('Tyler', './assets/TylerSpriteSheet.png', { frameWidth:45, frameHeight: 46 });
+
 } 
    
 
@@ -99,7 +143,9 @@ RUN THE create FUNCTION ONCE WHEN LOADING THE GAME
 function create ()
 {
     //  A simple background for our game
-    var skyimage = this.add.image(400, 300, 'space');
+
+
+    skyimage = this.add.image(400, 300, 'space');
     shootingstar = this.add.sprite(800, 200, 'projectile2');
     moon = this.add.sprite(550,100 , 'moon');
     /*
@@ -162,20 +208,20 @@ function create ()
     //  Our player animations, turning, walking left and walking right.
     this.anims.create({
         key: 'left',
-        frames: this.anims.generateFrameNumbers('stickman', { start: 1, end: 2 }),
+        frames: this.anims.generateFrameNumbers('stickman', { start: 10, end: 17 }),
         frameRate: 10,
         repeat: -1
     });
 
     this.anims.create({
         key: 'turn',
-        frames: [ { key: 'stickman', frame: 3 } ],
+        frames: [ { key: 'stickman', frame: 18  } ],
         frameRate: 20
     });
 
     this.anims.create({
         key: 'right',
-        frames: this.anims.generateFrameNumbers('stickman', { start: 4, end: 5 }),
+        frames: this.anims.generateFrameNumbers('stickman', { start: 19, end: 26 }),
         frameRate: 10,
         repeat: -1
 
@@ -191,7 +237,7 @@ function create ()
 
   this.anims.create({
         key: 'hurtright',
-        frames: [{key:'stickman', frame: 6 }],
+        frames: [{key:'stickman', frame: 37 }],
         frameRate: 10,
         repeat: -1
     });
@@ -235,14 +281,14 @@ function create ()
  
     this.anims.create({
         key: 'left3',
-        frames: this.anims.generateFrameNumbers('JoLu', { start: 2, end: 4 }),
+        frames: this.anims.generateFrameNumbers('JoLu', { start: 14, end: 23 }),
         frameRate: 10,
         repeat: -1
     });
 
       this.anims.create({
         key: 'facingright3',
-        frames: [ { key: 'JoLu', frame: 6 } ],
+        frames: [ { key: 'JoLu', frame: 25 } ],
         frameRate: 20
     });
 
@@ -251,7 +297,7 @@ function create ()
 
       this.anims.create({
         key: 'facingleft3',
-        frames: [ { key: 'JoLu', frame: 5 } ],
+        frames: [ { key: 'JoLu', frame: 24 } ],
         frameRate: 20
     });
 
@@ -259,7 +305,7 @@ function create ()
 
     this.anims.create({
         key: 'right3',
-        frames: this.anims.generateFrameNumbers('JoLu', { start: 7, end: 9 }),
+        frames: this.anims.generateFrameNumbers('JoLu', { start: 26, end:35  }),
         frameRate: 10,
         repeat: -1
     
@@ -267,26 +313,91 @@ function create ()
 
     this.anims.create({
         key: 'rightattack',
-        frames: [ { key: 'JoLu', frame: 10 } ],
+        frames: [ { key: 'JoLu', frame: 37 } ],
         frameRate: 20
     });
 
     this.anims.create({
         key: 'leftattack',
-        frames: [ { key: 'JoLu', frame: 1 } ],
+        frames: [ { key: 'JoLu', frame: 12 } ],
         frameRate: 20
         
     });
 
   this.anims.create({
         key: 'rightattack2',
-        frames: [ { key: 'JoLu', frame: 11 } ],
+        frames: [ { key: 'JoLu', frame: 45 } ],
         frameRate: 20
     });
 
     this.anims.create({
         key: 'leftattack2',
-        frames: [ { key: 'JoLu', frame: 0 } ],
+        frames: [ { key: 'JoLu', frame: 4 } ],
+        frameRate: 20
+        
+    });
+ 
+     player4 = this.physics.add.sprite(300,300, 'Tyler');
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player4.setBounce(0.2);
+    player4.setCollideWorldBounds(false);
+
+ 
+    this.anims.create({
+        key: 'left4',
+        frames: this.anims.generateFrameNumbers('Tyler', { start: 14, end: 23 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+      this.anims.create({
+        key: 'facingright4',
+        frames: [ { key: 'Tyler', frame: 25 } ],
+        frameRate: 20
+    });
+
+
+
+
+      this.anims.create({
+        key: 'facingleft4',
+        frames: [ { key: 'Tyler', frame: 24 } ],
+        frameRate: 20
+    });
+
+
+
+    this.anims.create({
+        key: 'right4',
+        frames: this.anims.generateFrameNumbers('Tyler', { start: 26, end:35  }),
+        frameRate: 10,
+        repeat: -1
+    
+    });
+
+    this.anims.create({
+        key: 'rightattack4',
+        frames: [ { key: 'Tyler', frame: 37 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'leftattack4',
+        frames: [ { key: 'Tyler', frame: 12 } ],
+        frameRate: 20
+        
+    });
+
+  this.anims.create({
+        key: 'rightattack5',
+        frames: [ { key: 'Tyler', frame: 45 } ],
+        frameRate: 20
+    });
+
+    this.anims.create({
+        key: 'leftattack5',
+        frames: [ { key: 'Tyler', frame: 4 } ],
         frameRate: 20
         
     });
@@ -318,6 +429,15 @@ function create ()
         // attack2: Phaser.Input.Keyboard.KeyCodes.O,
     })
 
+     fcvb = this.input.keyboard.addKeys({
+        up: Phaser.Input.Keyboard.KeyCodes.F,
+        down: Phaser.Input.Keyboard.KeyCodes.V,
+        left: Phaser.Input.Keyboard.KeyCodes.C,
+        right: Phaser.Input.Keyboard.KeyCodes.B,
+        attack: Phaser.Input.Keyboard.KeyCodes.N,
+        // attack2: Phaser.Input.Keyboard.KeyCodes.O,
+    })
+
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     // stars = this.physics.add.group({ 
     //     key: 'star',
@@ -344,12 +464,14 @@ function create ()
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player2, platforms);
     this.physics.add.collider(player3, platforms);
+    this.physics.add.collider(player4, platforms);
     // this.physics.add.collider(stars, platforms);
     // this.physics.add.collider(bombs, platforms);
 
     this.physics.add.collider(player, moving);
     this.physics.add.collider(player2, moving);
     this.physics.add.collider(player3, moving);
+    this.physics.add.collider(player4, moving);
     // this.physics.add.collider(stars, moving);
     // this.physics.add.collider(bombs, moving);
 
@@ -379,6 +501,17 @@ function update () {
         shootingstar.y = 200;
     }
 
+    skyimage.angle +=0.4;
+    
+
+       moonPositionIndex += 1;
+   if (moonPositionIndex >= moonPositions.length) {
+       moonPositionIndex = 0;
+}
+
+      moon.x = moonPositions[moonPositionIndex].x;
+      moon.y = moonPositions[moonPositionIndex].y;
+      moon.angle = moonPositions[moonPositionIndex].angle;
 
   
 
@@ -552,8 +685,46 @@ function update () {
         player3.anims.play('leftattack', true);
     }
 
+    
+        if (fcvb.left.isDown)
+    {
+        player4.setVelocityX(-160);
+
+        player4.anims.play('left4', true);
+
+       
+    }
+    else if (fcvb.right.isDown)
+    {
+        player4.setVelocityX(160);
+
+        player4.anims.play('right4', true);
+
+   
+    }
+    else
+    {
+        player4.setVelocityX(0);
+
+        player4.anims.play('turn');
+
+   
+    }
+
+    
+    if (fcvb.up.isDown && player4.body.touching.down)
+    {
+        player4.setVelocityY(-427);
+    }
 
 
+
+
+
+
+
+
+   
 
 
 
